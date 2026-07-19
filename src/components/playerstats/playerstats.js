@@ -374,7 +374,10 @@ function getSyncPlayStats() {
     return syncStats;
 }
 
-function getStats(instance, player) {
+// Exported for the React PlayerStatsOverlay to reuse the stats computation.
+// `instance` is only a session cache holder ({ lastSession, lastSessionTime }),
+// so callers can pass a plain object (kept in a ref).
+export function getStats(instance, player) {
     const statsPromise = player.getStats ? player.getStats() : Promise.resolve({});
     const sessionPromise = getSession(instance, player);
 
