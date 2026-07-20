@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import globalize from 'lib/globalize';
-import Slider from 'elements/jf-slider/Slider';
+import Slider, { BubbleText } from 'elements/jf-slider/Slider';
 
 interface SubtitleVerticalPositionSliderProps {
     /** Current vertical position, -16..16. */
@@ -25,6 +25,9 @@ const SubtitleVerticalPositionSlider = ({
     onPreview,
     onChange
 }: SubtitleVerticalPositionSliderProps) => {
+    // The hover/drag bubble shows the integer position.
+    const bubbleContent = useCallback((v: number) => <BubbleText>{v}</BubbleText>, []);
+
     return (
         <Slider
             value={value}
@@ -33,6 +36,7 @@ const SubtitleVerticalPositionSlider = ({
             step={1}
             keyboardMode='live'
             ariaLabel={globalize.translate('LabelSubtitleVerticalPosition')}
+            bubbleContent={bubbleContent}
             onInput={onInput}
             onPreview={onPreview}
             onChange={onChange}
