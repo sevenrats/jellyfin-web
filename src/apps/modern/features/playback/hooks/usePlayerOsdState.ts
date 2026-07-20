@@ -16,6 +16,8 @@ export interface PlayerOsdState {
     bufferedRanges: Array<{ start: number; end: number }>;
     /** The now-playing item (has Chapters, Name, RunTimeTicks, ServerId). */
     item: Record<string, unknown> | null;
+    /** Active media source id (for trickplay tile / image URLs). */
+    mediaSourceId: string | null;
     /** Player-supported commands (Mute, SetVolume, etc.). */
     supportedCommands: string[];
     /** True while the player is fetching/buffering (beginFetch..endFetch). */
@@ -31,6 +33,7 @@ const EMPTY: PlayerOsdState = {
     isProgressClear: false,
     bufferedRanges: [],
     item: null,
+    mediaSourceId: null,
     supportedCommands: [],
     isFetching: false
 };
@@ -52,6 +55,7 @@ function readState(): PlayerOsdState {
         isProgressClear: !!(state.MediaSource && state.MediaSource.RunTimeTicks == null),
         bufferedRanges: playState.BufferedRanges || [],
         item: nowPlaying,
+        mediaSourceId: state.MediaSource?.Id ?? null,
         supportedCommands: playbackManager.getSupportedCommands(player) || [],
         // beginFetch/endFetch flip this; seed from the player's current flag so a
         // fetch already in progress at mount shows the spinner (index.js:604-606).

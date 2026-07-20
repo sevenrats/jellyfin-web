@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback } from 'react';
+import React, { forwardRef, useCallback, type ReactNode } from 'react';
 
 import Slider, { type JfSliderHandle, type SliderMarker, type SliderRange } from 'elements/jf-slider/Slider';
 
@@ -15,10 +15,8 @@ export interface OsdPositionSliderProps {
     /** Per-direction keyboard steps, as percent (from skip-back/forward settings). */
     keyboardStepBack?: number;
     keyboardStepForward?: number;
-    /** Bubble: build custom (trickplay) HTML into the bubble; return true if handled. */
-    updateBubbleHtml?: (bubble: HTMLElement, value: number) => boolean;
-    /** Bubble: text/HTML fallback (chapter image or timestamp). */
-    getBubbleText?: (value: number) => string | null;
+    /** Bubble content (trickplay/chapter thumbnail, or a timestamp); null → no bubble. */
+    bubbleContent?: (value: number) => ReactNode;
     /** Committed value (drag release / click / keyboard commit) → seek. */
     onChange: (value: number) => void;
     /** OK/Enter with nothing staged → play/pause. */
@@ -39,8 +37,7 @@ const OsdPositionSlider = forwardRef<JfSliderHandle, OsdPositionSliderProps>(({
     bufferedRanges,
     keyboardStepBack,
     keyboardStepForward,
-    updateBubbleHtml,
-    getBubbleText,
+    bubbleContent,
     onChange,
     onActivate,
     onDraggingChange
@@ -65,8 +62,7 @@ const OsdPositionSlider = forwardRef<JfSliderHandle, OsdPositionSliderProps>(({
             bufferedRanges={bufferedRanges}
             keyboardStepBack={keyboardStepBack}
             keyboardStepForward={keyboardStepForward}
-            updateBubbleHtml={updateBubbleHtml}
-            getBubbleText={getBubbleText}
+            bubbleContent={bubbleContent}
             onChange={onChange}
             onActivate={onActivate}
             onPreview={handlePreview}

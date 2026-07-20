@@ -6,6 +6,7 @@ import { toAsyncPageRoute } from 'components/router/AsyncRoute';
 import { toViewManagerPageRoute } from 'components/router/LegacyRoute';
 import ErrorBoundary from 'components/router/ErrorBoundary';
 import FallbackRoute from 'components/router/FallbackRoute';
+import VideoPlayerPage from 'apps/modern/features/playback/components/VideoPlayerPage';
 
 import AppLayout from '../AppLayout';
 
@@ -24,7 +25,14 @@ export const APP_ROUTES: RouteObject[] = [
                 Component: ConnectionRequired,
                 children: [
                     ...ASYNC_USER_ROUTES.map(toAsyncPageRoute),
-                    ...LEGACY_USER_ROUTES.map(toViewManagerPageRoute)
+                    ...LEGACY_USER_ROUTES.map(toViewManagerPageRoute),
+
+                    // The video page is a self-contained React page (generic Page + VideoOsd),
+                    // shared with the modern app instead of the legacy controller + ViewManagerPage.
+                    {
+                        path: 'video',
+                        Component: VideoPlayerPage
+                    }
                 ],
                 ErrorBoundary
             },

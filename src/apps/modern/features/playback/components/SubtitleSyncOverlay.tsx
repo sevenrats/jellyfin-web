@@ -3,7 +3,7 @@ import IconButton from '@mui/material/IconButton';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { playbackManager } from 'components/playback/playbackmanager';
-import Slider from 'elements/jf-slider/Slider';
+import Slider, { BubbleText } from 'elements/jf-slider/Slider';
 
 const MIN = -30;
 const MAX = 30;
@@ -78,7 +78,10 @@ const SubtitleSyncOverlay = forwardRef<SubtitleSyncHandle>((_props, ref) => {
 
     const onSliderChange = useCallback((v: number) => applyOffset(v), [applyOffset]);
 
-    const getBubbleText = useCallback((v: number) => (v > 0 ? '+' : '') + round(v) + 's', []);
+    const bubbleContent = useCallback(
+        (v: number) => <BubbleText>{(v > 0 ? '+' : '') + round(v) + 's'}</BubbleText>,
+        []
+    );
 
     const onClose = useCallback(() => {
         const p = player();
@@ -125,7 +128,7 @@ const SubtitleSyncOverlay = forwardRef<SubtitleSyncHandle>((_props, ref) => {
                         max={MAX}
                         step={STEP}
                         keepProgress
-                        getBubbleText={getBubbleText}
+                        bubbleContent={bubbleContent}
                         onChange={onSliderChange}
                     />
                 </div>

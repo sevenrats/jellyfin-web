@@ -9,7 +9,7 @@ import FallbackRoute from 'components/router/FallbackRoute';
 
 import { ASYNC_PUBLIC_ROUTES, ASYNC_USER_ROUTES } from './asyncRoutes';
 import { LEGACY_PUBLIC_ROUTES, LEGACY_USER_ROUTES } from './legacyRoutes';
-import VideoPage from './video';
+import VideoPlayerPage from 'apps/modern/features/playback/components/VideoPlayerPage';
 
 export const APP_ROUTES: RouteObject[] = [
     {
@@ -25,10 +25,10 @@ export const APP_ROUTES: RouteObject[] = [
                     ...ASYNC_USER_ROUTES.map(toAsyncPageRoute),
                     ...LEGACY_USER_ROUTES.map(toViewManagerPageRoute),
 
-                    // The video page is special since it combines new controls with the legacy view
+                    // The video page is a self-contained React page (generic Page + VideoOsd)
                     {
                         path: 'video',
-                        Component: VideoPage
+                        Component: VideoPlayerPage
                     }
                 ],
                 ErrorBoundary

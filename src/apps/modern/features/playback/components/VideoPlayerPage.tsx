@@ -1,49 +1,63 @@
-import Box from '@mui/material/Box/Box';
-import Fade from '@mui/material/Fade/Fade';
-import React, { useRef, type FC, useEffect, useState } from 'react';
+import Box from '@mui/material/Box';
+import Fade from '@mui/material/Fade';
+import Typography from '@mui/material/Typography';
+import React, { useCallback, useEffect, useRef, useState, type FC } from 'react';
 
 import RemotePlayButton from 'apps/modern/components/AppToolbar/RemotePlayButton';
 import SyncPlayButton from 'apps/modern/components/AppToolbar/SyncPlayButton';
+import Page from 'components/Page';
 import AppToolbar from 'components/toolbar/AppToolbar';
-import ViewManagerPage from 'components/viewManager/ViewManagerPage';
 import { EventType } from 'constants/eventType';
 import Events, { type Event } from 'utils/events';
-import Typography from '@mui/material/Typography';
+
+import { useVideoPlayerLifecycle } from '../hooks/useVideoPlayerLifecycle';
+import VideoOsd from './VideoOsd';
 
 /**
- * Video player page component that renders mui controls for the top controls and the legacy view for everything else.
+ * The video player page for both apps (modern desktop + legacy TV). A generic
+ * React `Page` (fires the view lifecycle + media-control/theme-media signals)
+ * hosting the MUI header (title + SyncPlay/RemotePlay) and the React
+ * `VideoOsd`. `useVideoPlayerLifecycle` owns fullscreen / backdrop / player
+ * binding / stop-on-back. No controller, no index.html, no ViewManagerPage.
+ *
+ * The header title + visibility are fed by the OSD's React hooks
+ * (VIDEO_TITLE_CHANGE / SHOW_VIDEO_OSD), proving the item-4 event-ownership move
+ * end-to-end.
  */
-const VideoPage: FC = () => {
+const VideoPlayerPage: FC = () => {
     const documentRef = useRef<Document>(document);
     const [ isVisible, setIsVisible ] = useState(true);
     const [ videoTitle, setVideoTitle ] = useState<string>('');
 
-    const onShowVideoOsd = (_e: Event, isShowing: boolean) => {
-        setIsVisible(isShowing);
-    };
+    useVideoPlayerLifecycle();
 
-    const onTitleChange = (_e: Event, title: string) => {
+    const onShowVideoOsd = useCallback((_e: Event, isShowing: boolean) => {
+        setIsVisible(isShowing);
+    }, []);
+
+    const onTitleChange = useCallback((_e: Event, title: string) => {
         setVideoTitle(title);
-    };
+    }, []);
 
     useEffect(() => {
         const doc = documentRef.current;
-
-        if (doc) {
-            Events.on(doc, EventType.SHOW_VIDEO_OSD, onShowVideoOsd);
-            Events.on(doc, EventType.VIDEO_TITLE_CHANGE, onTitleChange);
-        }
+        Events.on(doc, EventType.SHOW_VIDEO_OSD, onShowVideoOsd);
+        Events.on(doc, EventType.VIDEO_TITLE_CHANGE, onTitleChange);
 
         return () => {
-            if (doc) {
-                Events.off(doc, EventType.SHOW_VIDEO_OSD, onShowVideoOsd);
-                Events.off(doc, EventType.VIDEO_TITLE_CHANGE, onTitleChange);
-            }
+            Events.off(doc, EventType.SHOW_VIDEO_OSD, onShowVideoOsd);
+            Events.off(doc, EventType.VIDEO_TITLE_CHANGE, onTitleChange);
         };
-    }, []);
+    }, [ onShowVideoOsd, onTitleChange ]);
 
     return (
-        <>
+        <Page
+            id='videoOsdPage'
+            className='libraryPage'
+            isNowPlayingBarEnabled={false}
+            isThemeMediaSupported
+            isBackButtonEnabled
+        >
             <Fade
                 in={isVisible}
                 easing='fade-out'
@@ -77,16 +91,9 @@ const VideoPage: FC = () => {
                 </Box>
             </Fade>
 
-            <ViewManagerPage
-                controller='playback/video/index'
-                view='playback/video/index.html'
-                type='video-osd'
-                isFullscreen
-                isNowPlayingBarEnabled={false}
-                isThemeMediaSupported
-            />
-        </>
+            <VideoOsd />
+        </Page>
     );
 };
 
-export default VideoPage;
+export default VideoPlayerPage;

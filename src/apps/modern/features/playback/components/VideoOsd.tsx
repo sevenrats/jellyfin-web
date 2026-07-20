@@ -33,9 +33,11 @@ import { useOsdVisibility } from '../hooks/useOsdVisibility';
 import { usePlaybackRateRestore } from '../hooks/usePlaybackRateRestore';
 import { usePlayerOsdState } from '../hooks/usePlayerOsdState';
 import { usePlayerVolume } from '../hooks/usePlayerVolume';
+import { useTrickplayResolution } from '../hooks/useTrickplayResolution';
 import { useUpNext } from '../hooks/useUpNext';
 import { useVideoTitle } from '../hooks/useVideoTitle';
 import OsdPositionSlider from './OsdPositionSlider';
+import TrickplayBubble from './TrickplayBubble';
 import OsdVolumeSlider from './OsdVolumeSlider';
 import PlayerStatsOverlay from './PlayerStatsOverlay';
 import RecordButton from './RecordButton';
@@ -118,9 +120,25 @@ export default function VideoOsd() {
             .map(r => ({ start: (r.start / state.runtimeTicks) * 100, end: (r.end / state.runtimeTicks) * 100 }));
     }, [state.bufferedRanges, state.runtimeTicks, state.positionTicks]);
 
-    const getBubbleText = useCallback(
-        (percent: number) => datetime.getDisplayRunningTime((state.runtimeTicks * percent) / 100),
-        [state.runtimeTicks]
+    const trickplay = (state.item?.Trickplay as Parameters<typeof useTrickplayResolution>[0]) ?? null;
+    const trickplayInfo = useTrickplayResolution(trickplay, state.mediaSourceId);
+
+    // Seek-bar preview: TrickplayBubble renders a trickplay thumbnail → chapter
+    // image → plain timestamp. All JSX, no imperative HTML.
+    const trickplayItem = state.item as Parameters<typeof TrickplayBubble>[0]['item'] | null;
+    const bubbleContent = useCallback(
+        (percent: number) => {
+            if (!trickplayItem) return null;
+            return (
+                <TrickplayBubble
+                    item={trickplayItem}
+                    trickplayInfo={trickplayInfo}
+                    mediaSourceId={state.mediaSourceId}
+                    positionTicks={(state.runtimeTicks * percent) / 100}
+                />
+            );
+        },
+        [trickplayItem, trickplayInfo, state.mediaSourceId, state.runtimeTicks]
     );
 
     const onSeek = useCallback((percent: number) => {
@@ -190,7 +208,7 @@ export default function VideoOsd() {
                                     isClear={state.isProgressClear}
                                     markers={markers}
                                     bufferedRanges={bufferedRanges}
-                                    getBubbleText={getBubbleText}
+                                    bubbleContent={bubbleContent}
                                     onChange={onSeek}
                                     onActivate={onPlayPause}
                                     onDraggingChange={onSliderDrag}
